@@ -1,0 +1,2 @@
+The following should be replaced
+<%= project.version %>
