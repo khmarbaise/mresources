@@ -1,0 +1,132 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                        http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.fake</groupId>
+    <artifactId>fake-parent</artifactId>
+    <version>1.6.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>fake parent pom</name>
+    <description>Fake Parent pom</description>  
+
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+
+            <properties>
+                <target.version.encoded>dev</target.version.encoded>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>prod</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+
+            <build>
+                <plugins>
+     <!-- TEST 1 (enabled)  -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>1.9.1</version>
+                        <executions>
+                            <execution>
+                                <id>regex-target.version.encoded</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>regex-property</goal>
+                                </goals>
+                                <configuration>
+                                    <name>target.version.encoded</name>
+                                    <value>${project.version}</value>
+                                    <regex>^([0-9]+)\.([0-9]+)\.([0-9]+)(-SNAPSHOT)?$</regex>
+                                    <replacement>v$1p$2p$3</replacement>
+                                    <failIfNoMatch>true</failIfNoMatch>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+    <!-- TEST 2 (disabled for now)
+                    <plugin>
+                        <groupId>org.codehaus.groovy.maven</groupId>
+                        <artifactId>gmaven-plugin</artifactId>
+                         <executions>
+                            <execution>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <source>
+                                        System.setProperty("target.version.encoded", "${version}".replace('-SNAPSHOT', ''))
+                                        project.properties.setProperty("target.version.encoded", "${version}".replace('-SNAPSHOT', ''))
+                                    </source>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+-->
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                              <echo>=======================================</echo>
+                              <echo>DYNAMIC VARIABLES</echo>
+                              <echo>=======================================</echo>
+                              <echo>[target.version.encoded] ${target.version.encoded}</echo>
+                              <echo>=======================================</echo>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.3</version>
+                <configuration>
+                    <param>${target.version.encoded}</param>
+                </configuration>
+            </plugin>
+        </plugins>
+
+        <resources>
+            <resource>
+                <filtering>false</filtering>
+                <directory>${basedir}/</directory>
+                <targetPath>${project.build.directory}/${target.version.encoded}</targetPath>
+            </resource>
+        </resources>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>Maven Central</id>
+            <url>http://repo1.maven.org/maven2</url>
+        </repository>
+    </repositories>
+
+</project>
